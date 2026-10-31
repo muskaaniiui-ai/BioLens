@@ -152,22 +152,128 @@
 
   /* ---------- CONTACT ---------- */
   function contact() {
-    return `<div class="wrap"><section class="sec"><span class="eyebrow">Contact</span><h1 style="font-size:2.4rem;margin:.7rem 0">Questions, ideas, <span class="grad">a tool we should add?</span></h1>
-      <div class="grid g2" style="margin-top:1.4rem"><form class="form card" id="cf"><input id="cn" placeholder="Your name" required><input id="ce" type="email" placeholder="Your email" required>
-        <select id="ct"><option>Feedback</option><option>Request a new tool</option><option>Found a mistake</option><option>Collaboration</option></select><textarea id="cm" rows="6" placeholder="Your message" required></textarea>
-        <button class="btn pri" type="submit">Send message ✉️</button><small style="color:var(--muted)">This opens your email app with the message ready to send.</small></form>
-      <div><div class="card"><div class="ic">✉️</div><h4>Email</h4><p><a href="mailto:${TEAM.email}">${TEAM.email}</a></p></div><div class="card" style="margin-top:1rem"><div class="ic">🏛️</div><h4>${TEAM.name}</h4><p>${TEAM.institution}</p></div>
-      <div class="card" style="margin-top:1rem"><h4>Your progress</h4><p>Progress is saved only in this browser.</p><p style="margin-top:.7rem"><button class="btn sm" id="rp">Reset my progress</button></p></div></div></div>
-      <div class="sec-h" style="margin-top:2.4rem"><h2>FAQ</h2></div>
-      <details><summary>Is this the real BLAST / UniProt website?</summary><p>No. These are simplified replicas for learning, with example data. They use the same sections and labels so you recognise the real pages.</p></details>
-      <details><summary>Do I need to upload my data?</summary><p>No. BioLens never asks for sequences. It is purely for learning how to read outputs.</p></details>
-      <details><summary>Can I trust the numbers shown?</summary><p>They are illustrative. The explanations (what a column means, how to judge it) follow the tools’ documentation, but always check the originals for real work.</p></details>
-      <details><summary>How do I add a new tool?</summary><p>Copy a file in <code>js/tools/</code>, change the HTML and the explanations, and add its script tag to <code>index.html</code>. See the README.</p></details></section></div>`;
-  }
-  function initContact() {
-    $('#cf').onsubmit = e => { e.preventDefault(); const b = encodeURIComponent(`${$('#cm').value}\n\n— ${$('#cn').value} (${$('#ce').value})`); location.href = `mailto:${TEAM.email}?subject=${encodeURIComponent('BioLens: ' + $('#ct').value)}&body=${b}`; BL.toast('Opening your email app…'); };
-    $('#rp').onclick = () => { BL.resetProgress(); BL.toast('Progress reset'); };
-  }
+  return `<div class="wrap"><section class="sec"><span class="eyebrow">Contact</span><h1 style="font-size:2.4rem;margin:.7rem 0">Questions, ideas, <span class="grad">a tool we should add?</span></h1>
+    <div class="grid g2" style="margin-top:1.4rem">
+      <form class="form card" id="cf">
+        <input id="cn" placeholder="Your name" required>
+        <input id="ce" type="email" placeholder="Your email" required>
+        <select id="ct">
+          <option>Feedback</option>
+          <option>Request a new tool</option>
+          <option>Found a mistake</option>
+          <option>Collaboration</option>
+        </select>
+        <textarea id="cm" rows="6" placeholder="Your message" required></textarea>
+        <button class="btn pri" type="submit">Send message ✉️</button>
+        <p id="cf-status" role="status" aria-live="polite" style="margin-top:.8rem"></p>
+      </form>
 
+      <div>
+        <div class="card">
+          <div class="ic">✉️</div>
+          <h4>Email</h4>
+          <p><a href="mailto:${TEAM.email}">${TEAM.email}</a></p>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="ic">🏛️</div>
+          <h4>${TEAM.name}</h4>
+          <p>${TEAM.institution}</p>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h4>Your progress</h4>
+          <p>Progress is saved only in this browser.</p>
+          <p style="margin-top:.7rem">
+            <button class="btn sm" id="rp">Reset my progress</button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-h" style="margin-top:2.4rem"><h2>FAQ</h2></div>
+    <details>
+      <summary>Is this the real BLAST / UniProt website?</summary>
+      <p>No. These are simplified replicas for learning, with example data. They use the same sections and labels so you recognise the real pages.</p>
+    </details>
+    <details>
+      <summary>Do I need to upload my data?</summary>
+      <p>No. BioLens never asks for sequences. It is purely for learning how to read outputs.</p>
+    </details>
+    <details>
+      <summary>Can I trust the numbers shown?</summary>
+      <p>They are illustrative. The explanations (what a column means, how to judge it) follow the tools’ documentation, but always check the originals for real work.</p>
+    </details>
+    <details>
+      <summary>How do I add a new tool?</summary>
+      <p>Copy a file in <code>js/tools/</code>, change the HTML and the explanations, and add its script tag to <code>index.html</code>. See the README.</p>
+    </details>
+  </section></div>`;
+}
+  function initContact() {
+  const form = $('#cf');
+  const button = form.querySelector('button[type="submit"]');
+  const status = $('#cf-status');
+
+  form.onsubmit = async e => {
+    e.preventDefault();
+
+    const name = $('#cn').value.trim();
+    const email = $('#ce').value.trim();
+    const category = $('#ct').value;
+    const message = $('#cm').value.trim();
+
+    if (!name || !email || !message) {
+      BL.toast('Please complete all fields.');
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('_replyto', email);
+    formData.append('category', category);
+    formData.append('message', message);
+    formData.append('_subject', 'New BioLens Feedback: ' + category);
+
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    status.textContent = '';
+
+    try {
+      const response = await fetch(
+        'https://formspree.io/f/xeaaldog',
+        {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        form.reset();
+        status.textContent = '✓ Message sent successfully! Thank you for contacting BioLens.';
+        status.style.color = '#16a34a';
+        BL.toast('Feedback sent successfully!');
+      } else {
+        throw new Error('Submission failed');
+      }
+
+    } catch (error) {
+      status.textContent = 'Unable to send your message. Please try again later.';
+      status.style.color = '#dc2626';
+      BL.toast('Message could not be sent.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Send message ✉️';
+    }
+  };
+
+  $('#rp').onclick = () => {
+    BL.resetProgress();
+    BL.toast('Progress reset');
+  };
+}
   route();
 })();
