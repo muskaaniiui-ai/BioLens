@@ -191,3 +191,6 @@ details{background:var(--panel);border:1px solid var(--line);border-radius:12px;
 @media(max-width:860px){.g3,.g4,.g2,.anat{grid-template-columns:1fr}.links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:var(--bg);border-bottom:1px solid var(--line);padding:.8rem}.links.open{display:flex}.burger{display:block}.wrap{padding:0 16px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 .rp-rel{position:relative}.hot{position:absolute;border-radius:5px}
+/* Fix: show the 1-2-3 step numbers fully inside the cards */
+.card.step{padding-top:3.4rem;overflow:visible}
+.card.step:before{top:14px;left:18px}

@@ -1,8 +1,8 @@
 /* BioLens site: router + Home / About / Dashboard / Glossary / Contact */
 (function () {
   const $ = BL.$, $$ = BL.$$, view = $('#view');
-  const TEAM = { name: 'Team BioLens', institution: 'Your University · Department of Bioinformatics', email: 'team@example.com',
-    members: [['Your Name', 'Project lead · interface & animation'], ['Teammate 2', 'Content · tool replicas'], ['Teammate 3', 'Biology review · explanations']] };
+  const TEAM = { name: 'Team BioLens', institution: 'International Islamic University Islamabad · Department of Bioinformatics', email: 'muskaan.iiui@gmail.com',
+    members: [['Muskan Bibi', 'Project lead · interface & animation'], ['Manahil Fida Raja', 'Content · tool replicas'], ['Memoona Muhkam', 'Biology review · explanations']] };
   const PATHS = [
     ['From a raw sequence to its function', '🧬', ['genbank', 'blast', 'uniprot', 'interpro']],
     ['From a gene to a disease', '🏥', ['ncbigene', 'ensembl', 'clinvar', 'genecards']],
